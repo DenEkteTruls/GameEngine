@@ -32,6 +32,9 @@
     <ClInclude Include="error_handler.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="gameobject.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

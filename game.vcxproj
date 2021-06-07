@@ -157,6 +157,7 @@
     <ClInclude Include="engine.hpp" />
     <ClInclude Include="error_handler.hpp" />
     <ClInclude Include="game.h" />
+    <ClInclude Include="gameobject.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

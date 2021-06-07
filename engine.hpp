@@ -2,60 +2,6 @@
 
 #include "game.h"
 
-#define BLOCK_SIZE 64
-
-
-typedef struct GameObject
-{
-	int id;
-	int speed = 5;
-	static int current_id;
-	bool movement[4]{ 0, 0, 0, 0 };
-	bool collided = false;
-
-	SDL_Rect src{ 0, 0, 0, 0 };
-	SDL_Rect dst{ 0, 0, BLOCK_SIZE, BLOCK_SIZE };
-	SDL_Texture *texture;
-
-	void eventHandler_controllable(SDL_Event event);
-
-	GameObject(SDL_Renderer *renderer, const char *filename, int w, int h);
-} _GameObjectT;
-
-
-int GameObject::current_id = 0;
-
-
-GameObject::GameObject(SDL_Renderer *renderer, const char *filename, int w, int h)
-{
-	id = current_id++;
-	src.w = w; src.h = h;
-
-	SDL_Surface *tmp = IMG_Load(filename);
-	this->texture = SDL_CreateTextureFromSurface(renderer, tmp);
-	SDL_FreeSurface(tmp);
-}
-
-
-void GameObject::eventHandler_controllable(SDL_Event event)
-{
-	if (!collided)
-	{
-		switch (event.type)
-		{
-		case SDL_KEYDOWN:
-			switch (event.key.keysym.scancode)
-			{
-			case SDL_SCANCODE_W:	dst.y -= speed;	break;
-			case SDL_SCANCODE_S:	dst.y += speed;	break;
-			case SDL_SCANCODE_A:	dst.x -= speed;	break;
-			case SDL_SCANCODE_D:	dst.x += speed;	break;
-			}
-		}
-	}
-}
-
-
 
 //////////////////////		ENGINE		////////////////////////
 
@@ -117,29 +63,48 @@ Engine::Engine(const char *title, int width, int height)
 
 void Engine::collide_preventer(int id)
 {
-	_GameObjectT *currentGameObject = nullptr;
+	_GameObjectT *currentGameObject{ nullptr };
 
 	for (_GameObjectT* gameObject : gameObjects)
 	{
-		if ((*gameObject).id == id) {
-			currentGameObject = gameObject;
+		if (gameObject->id == id) {
+			currentGameObject = gameObject; //&(*gameObject);
 		}
 	}
 
 	for (_GameObjectT* gameObject : gameObjects)
 	{
-		std::cout << currentGameObject->dst.x << std::endl;
-		if (currentGameObject->dst.x > gameObject->dst.x && currentGameObject->dst.x < gameObject->dst.x) {
-			if (currentGameObject->dst.y > gameObject->dst.y && currentGameObject->dst.y < gameObject->dst.y) {
+		if (gameObject->id == currentGameObject->id) { continue; }
+
+		int tmp[4] = { 0, 0, 0, 0 };
+
+		if (currentGameObject->dst.x + currentGameObject->dst.w >= gameObject->dst.x) {
+			currentGameObject->collide_info[3] = 1; tmp[3] = 1;
+		} if (currentGameObject->dst.x <= gameObject->dst.x + gameObject->dst.w) {
+			currentGameObject->collide_info[2] = 1; tmp[2] = 1;
+		} if (currentGameObject->dst.y + currentGameObject->dst.h >= gameObject->dst.y) {
+			currentGameObject->collide_info[0] = 1; tmp[0] = 1;
+		} if (currentGameObject->dst.y <= gameObject->dst.y + gameObject->dst.h) {
+			currentGameObject->collide_info[1] = 1; tmp[1] = 1;
+		}
+
+		if (std::accumulate(tmp, tmp + 4, NULL) == 4) {
+			currentGameObject->collided = true;
+		}
+
+		// std::cout << currentGameObject->collided << " | " << *tmp << std::endl;
+
+		/*if(currentGameObject->dst.x+currentGameObject->dst.w >= gameObject->dst.x && currentGameObject->dst.x <= gameObject->dst.x+gameObject->dst.w) {
+			if (currentGameObject->dst.y + currentGameObject->dst.h >= gameObject->dst.y && currentGameObject->dst.y <= gameObject->dst.y + gameObject->dst.h) {
 				currentGameObject->collided = true;
-				std::cout << "COLLIDE" << std::endl;
+				std::cout << "[" << currentGameObject->id << "] COLLIDE [" << gameObject->id << "]" << std::endl;
 			}
-			else {
+			else { 
 				currentGameObject->collided = false;
 			}
 		} else{
 			currentGameObject->collided = false;
-		}
+		}*/
 	}
 }
 
